@@ -37,7 +37,7 @@ int sc_memoryGet(int address, int* value){
 int sc_memorySave(char* filename){
 
     FILE *file = fopen(filename,"wb");
-    fread(memory, sizeof(int), SIZE, file);
+    fwrite(memory, sizeof(int), SIZE, file);
     fclose(file);
     
     return 0;
