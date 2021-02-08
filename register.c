@@ -4,7 +4,7 @@
 
 int sc_regInit(){
     flag = 0;
-    
+
     return 0;
 }
 
@@ -29,10 +29,10 @@ int sc_regGet(int sregister, int* value){
     if (sregister != OVERFLOW || sregister != DELZERO || sregister != OUTMEM || sregister != IMP ||
     sregister != COMMAND) {
 
-    if ((flag &~ sregister) != 0)
-        *value = 1;
-     else
-        *value = 0;
+        if ((flag &~ sregister) != 0)
+            *value = 1;
+        else
+            *value = 0;
 
     }
 
@@ -59,6 +59,7 @@ int sc_commandEncode(int command, int operand, int* value){
 }
 
 int sc_commandDecode(int value, int* command, int* operand){
+
     if ((value >> 14 ) != 0){
         sc_regSet(COMMAND, 1);
         return 1;

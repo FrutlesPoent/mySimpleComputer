@@ -7,12 +7,12 @@
 int sc_memoryInit(){
     for (int i = 0; i < SIZE; i++)
         memory[i] = 0;
-        
-    return 0; 
+
+    return 0;
 }
 
 int sc_memorySet(int address, int value){
-    if (address > SIZE || address < MIN){ 
+    if (address > SIZE || address < MIN){
          sc_regSet(OUTMEM, 1); // out of memory
          return 1;
     }
@@ -23,10 +23,10 @@ int sc_memorySet(int address, int value){
 }
 
 int sc_memoryGet(int address, int* value){
-    
-    if (address > SIZE || address < MIN){ 
-        sc_regSet(OUTMEM, 1); // out of memory 
-        return 1; 
+
+    if (address > SIZE || address < MIN){
+        sc_regSet(OUTMEM, 1); // out of memory
+        return 1;
     }
 
     *value = memory[address];
