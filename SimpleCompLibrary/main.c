@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "memory.h"
 #include "register.h"
+#include "terminal.h"
 
 int main() {
 
