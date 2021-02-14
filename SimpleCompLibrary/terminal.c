@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <termios.h>
+#include <sys/ioctl.h>
 #include "terminal.h"
 
 int mt_clrscr(){
@@ -17,7 +19,21 @@ int mt_default(){
 
 int mt_gotoXY(int x, int y){
 
-    printf("\E[%d;%dH", x, y);
+    printf("\E[%d;%dH", y, x); // first row, second  column
+
+    return 0;
+}
+
+int mt_getscreensize(int* rows, int* cols){
+
+    struct winsize size;
+
+    if (!ioctl(1, TIOCGWINSZ, &size)){
+        *rows = size.ws_row;
+        *cols = size.ws_col;
+    } else {
+        return -1;
+    }
 
     return 0;
 }

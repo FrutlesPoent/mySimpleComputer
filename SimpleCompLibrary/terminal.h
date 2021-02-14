@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <termios.h>
+#include <sys/ioctl.h>
 
 #ifndef TERMINAL_H
 #define TERMINAL_H

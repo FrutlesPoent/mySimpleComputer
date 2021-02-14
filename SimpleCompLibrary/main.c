@@ -38,6 +38,11 @@ int main() {
     mt_gotoXY(5,3);
     printf("lul");
 
+    int rows;
+    int cols;
+
+    mt_getscreensize(&rows, &cols);
+    printf("rows: %d and cols: %d", rows, cols);
 
     return 0;
 
