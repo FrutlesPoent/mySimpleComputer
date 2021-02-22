@@ -42,39 +42,32 @@ int bc_box(int x1, int y1, int x2, int y2){
 	return 0;
 }
 
-int bc_printBigChar(int a[2], int x, int y, ForegroundColors foreColor, BackgroundColors backColor){
+int bc_printBigChar(int* a, int x, int y, ForegroundColors foreColor, BackgroundColors backColor){
+
+    int x1, y1;
+    mt_clrscr();
+    mt_getscreensize(&y1, &x1);
 
     if (x < 0 || y < 0)
-		return -1;
+        return -1;
 
-	char str[8] = { 0 };
+    mt_setfgcolor(foreColor);
+    mt_setbgcolor(backColor);
+    
+    mt_gotoXY(x,y);    
+    for (int i = 0; i < 8; i++){
+        for (int j = 0; j < 8; j++){
+            if ((a[i/4] >> ((i % 4) * 8 + j -1) & 1))
+                bc_printA(BC_ALTCHARSET_A);
+            else
+                printf(" ");
+            mt_gotoXY(x + j, y + i);
+        }
 
-	mt_setfgcolor(foreColor);
-	mt_setbgcolor(backColor);
-	for (int i = 0; i < 2; i++) {
+    }
 
-		int a_buf = a[i];
-
-		for (int j = 0; j < 4; j++) {
-			int buf;
-
-			a_buf = a[i] >> (j * 8);
-			buf = a_buf & 0xFF;
-
-			for (int k = 0; k < 8; k++) {
-				int buf_bit = (buf & (1 << k)) >> k;
-				if (buf_bit != 0) {
-					str[k] = BC_ALTCHARSET_A[0];
-				} else {
-					str[k] = ' ';	
-				}
-			}
-			mt_gotoXY(x + (i * 4) + j, y);
-			bc_printA(str);
-		}
-	}
-
-	mt_gotoXY(18, 0);
+ mt_setfgcolor(WhiteFore);
+ mt_setbgcolor(BlackBack);
 }
 
 int bc_setBigCharPos(int* big, int x, int y, int value){
