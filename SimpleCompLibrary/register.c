@@ -72,3 +72,6 @@ int sc_commandDecode(int value, int* command, int* operand){
     return 0;
 
 }
+void sc_printReg(){
+    printf("%d", flag);
+}
