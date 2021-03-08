@@ -3,6 +3,7 @@
 #include "register.h"
 #include "terminal.h"
 #include "myBigChars.h"
+#include "shell.h"
 
 int main() {
 
@@ -46,16 +47,18 @@ int main() {
     // printf("rows: %d and cols: %d", rows, cols);
     // bc_box(6,6,5,5);
 
-    int fd = open("file.bin", O_CREAT | O_RDWR | O_TRUNC);
+    //int fd = open("file.bin", O_CREAT | O_RDWR | O_TRUNC);
 
-    int a[2] = {431, 1312};
-    bc_setBigCharPos(a, 0, 0, 1);
-    bc_bigCharWrite(fd, a, 2);
-    int fo = open("file.bin", O_RDONLY);
-    bc_printBigChar(a, 1, 1, WhiteFore, BlackBack);
-    int test;
-    bc_getBigCharPos(a, 1, 0, &test);
-    printf("\n%d", test);
+    //int a[2] = {606348348, 1009001508};
+    //bc_setBigCharPos(a, 0, 0, 1);
+    //bc_bigCharWrite(fd, a, 2);
+    //int fo = open("file.bin", O_RDONLY);
+    //bc_printBigChar(a, 2, 3, WhiteFore, BlackBack);
+    // int test;
+    // bc_getBigCharPos(a, 1, 0, &test);
+    // printf("\n%d", test);
+
+    shellRun();
     return 0;
 
 }
