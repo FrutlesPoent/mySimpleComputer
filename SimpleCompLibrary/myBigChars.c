@@ -41,7 +41,7 @@ int bc_box(int x1, int y1, int x2, int y2){
 	return 0;
 }
 
-int bc_printBigChar(int a[2], int x, int y, ForegroundColors foreColor, BackgroundColors backColor){
+int bc_printBigChar(int* a, int x, int y, ForegroundColors foreColor, BackgroundColors backColor){
 
    int x1, y1, i, j;
 	mt_getscreensize(&y1, &x1);
