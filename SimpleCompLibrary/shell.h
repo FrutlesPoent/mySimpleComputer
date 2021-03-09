@@ -3,6 +3,7 @@
 #include "terminal.h"
 #include "register.h"
 #include "memory.h"
+#include "readkey.h"
 
 #ifndef SHELL_H
 #define SHELL_H
@@ -21,5 +22,6 @@ void operation_paint();
 void flags_paint();
 void keys_paint();
 void box_paint();
+void flagsRegPaint();
 
 #endif
