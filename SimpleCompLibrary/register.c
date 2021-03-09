@@ -2,6 +2,7 @@
 #include "register.h"
 #include "stat.h"
 
+
 int sc_regInit(){
     flag = 0;
 
@@ -29,11 +30,10 @@ int sc_regGet(int sregister, int* value){
     if (sregister != OVERFLOW || sregister != DELZERO || sregister != OUTMEM || sregister != IMP ||
     sregister != COMMAND) {
 
-        if ((flag &~ sregister) != 0)
-            *value = 1;
-        else
+        if ((flag & sregister) == 0)
             *value = 0;
-
+        else
+            *value = 1;
     }
 
     return 0;
@@ -46,7 +46,8 @@ int sc_commandEncode(int command, int operand, int* value){
         || (command > 33 && command < 40) 
         || (command > 43 && command < 51)
         || (command > 76)){
-            return 1;
+            sc_regSet(COMMAND, 1);
+            return -1;
         }
     if (operand > 127 || operand < 0){
         return 1;
@@ -74,4 +75,20 @@ int sc_commandDecode(int value, int* command, int* operand){
 }
 void sc_printReg(){
     printf("%d", flag);
+}
+
+void sc_accum_set(int value){
+    accumReg = value;
+}
+
+int sc_accum_get(){
+    return accumReg;
+}
+
+void sc_counter_set(int value){
+    counterReg = value;
+}
+
+int sc_counter_get(){
+    return counterReg;
 }
