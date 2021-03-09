@@ -61,8 +61,6 @@ int bc_printBigChar(int* a, int x, int y, ForegroundColors foreColor, Background
 			mt_gotoXY(x + j, y + i);
 		}
 	}
-	mt_setfgcolor(WhiteFore);
-	mt_setbgcolor(BlackBack);
 	return 0;
 }
 
