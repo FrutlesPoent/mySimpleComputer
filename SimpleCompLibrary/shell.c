@@ -1,5 +1,7 @@
 #include "shell.h"
 
+struct itimerval nval, oval;
+
 void set_color(ForegroundColors colorfg, BackgroundColors colorbg){
     mt_setfgcolor(colorfg);
     mt_setbgcolor(colorbg);
@@ -19,6 +21,16 @@ void inputMemory(){
     rk_mytermregime(0, 0, 0, 0, 1);
 }
 
+void instruction_iter(){
+ int value = sc_counter_get();
+ int valueReg;
+ sc_regGet(IMP, &valueReg);
+
+ if (!valueReg){
+      value += 1;
+ }
+ sc_counter_set(value);
+}
 
 
 void input_instruction(){
@@ -120,9 +132,33 @@ void paintCell(){
     box_paint();
 }
 
-void shellRun(){ // main
+void signalhandler(int signo){
+    if (signo == SIGALRM){
+        instruction_iter();
+        instruction_counter_paint();
+    }
+    if (signo == SIGUSR1)
+        printf("restart\n");
+}
 
-     mt_clrscr();
+void check_signal() {
+    if (signal(SIGALRM, signalhandler) == SIG_ERR)
+        printf("\n cant't catch SIGINT\n");
+    if (signal(SIGUSR1, signalhandler) == SIG_ERR)
+        printf("\n cant't catch SIGUSR1\n");
+}
+
+int shellRun(){ // main
+
+    signal(SIGALRM, signalhandler);
+    nval.it_interval.tv_sec = 3;
+    nval.it_interval.tv_usec = 500;
+    nval.it_value.tv_sec = 1;
+    nval.it_value.tv_usec = 0;
+    
+    setitimer(ITIMER_REAL, &nval, &oval);
+
+    mt_clrscr();
 
     set_color(BlackFore,WhiteBack);
     rk_mytermregime(0,0,0,0,1);
@@ -131,6 +167,7 @@ void shellRun(){ // main
     mt_gotoXY(1,25);
     enum Keys keys;
     while(1){
+        check_signal();
         rk_readkey(&keys);
         switch (keys){
         case KEY_right: {
@@ -315,12 +352,22 @@ void operation_paint()
 void instruction_counter_paint(){
     int offsetCol = 63;
     int offsetRow = 4;
+    int command;
+    int operand;
+    char buff[6];
+    int value = sc_counter_get();
+
+    sc_commandDecode(value, &command, &operand);
+
     bc_box(offsetCol, offsetRow, 20, 3);
     mt_gotoXY(1 + offsetCol, offsetRow);
     printf("instructionCounter");
     mt_gotoXY(7 + offsetCol ,offsetRow + 1);
     set_color(BlackFore,WhiteBack);
-    printf("+0000");
+
+    get_memory_buff(buff, command, operand);
+    
+    printf("%s", buff);
 }
 
 void accumulator_paint(){

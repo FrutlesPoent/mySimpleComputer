@@ -4,6 +4,8 @@
 #include "register.h"
 #include "memory.h"
 #include "readkey.h"
+#include <signal.h>
+#include <sys/time.h>
 
 #ifndef SHELL_H
 #define SHELL_H
@@ -11,7 +13,7 @@
 static int positionRowShell = 0;
 static int positionColShell = 0;
 
-void shellRun();
+int shellRun();
 
 void set_color(ForegroundColors, BackgroundColors);
 void memory_paint();
