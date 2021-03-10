@@ -1,6 +1,11 @@
 #include "shell.h"
 
 struct itimerval nval, oval;
+// typedef void (*sighandler_t)(int);
+
+// sighandler_t signal(int signum, sighandler_t handler){
+//     printf("True");
+// }
 
 void set_color(ForegroundColors colorfg, BackgroundColors colorbg){
     mt_setfgcolor(colorfg);
@@ -29,6 +34,7 @@ void instruction_iter(){
  if (!valueReg){
       value += 1;
  }
+
  sc_counter_set(value);
 }
 
@@ -36,14 +42,19 @@ void instruction_iter(){
 void input_instruction(){
     printf("Input value:\n");
     rk_mytermregime(1, 0, 0, 1, 0);
-    int command, operand, result;
-    scanf("%2d%2d", &command, &operand);
-    int retval = sc_commandEncode(command, operand, &result);
-    if (retval != 0 || (command == 0)) {
+    //int command, operand, result;
+    int value;
+    scanf("%4d", &value);
+    //int retval = sc_commandEncode(command, operand, &result);
+    // if (retval != 0 || (command == 0)) {
+    //     printf("Input error");
+    //     rk_mytermregime(0, 0, 0, 0, 1);;
+    // }
+    if (value > 9999){
         printf("Input error");
-        rk_mytermregime(0, 0, 0, 0, 1);;
+        rk_mytermregime(0,0,0,0,1);
     }
-    sc_counter_set(result);
+    sc_counter_set(value);
     rk_mytermregime(0, 0, 0, 0, 1);
 }
 
@@ -150,13 +161,11 @@ void check_signal() {
 
 int shellRun(){ // main
 
-    signal(SIGALRM, signalhandler);
     nval.it_interval.tv_sec = 3;
     nval.it_interval.tv_usec = 500;
     nval.it_value.tv_sec = 1;
     nval.it_value.tv_usec = 0;
-    
-    setitimer(ITIMER_REAL, &nval, &oval);
+    //setitimer(ITIMER_REAL, &nval, &oval);
 
     mt_clrscr();
 
@@ -213,7 +222,8 @@ int shellRun(){ // main
             mt_gotoXY(1,25);
             input_instruction();
             getchar();
-            instruction_counter_paint();
+            //instruction_counter_paint();
+            paintCell();
             break;
         }
         case KEY_l: {
@@ -349,15 +359,27 @@ void operation_paint()
     printf("+00 : 00");
 }
 
+void get_mem_buff(char buff[6], int value){
+    buff[0] = '+';
+    buff[4] = value % 10 + 0x30;
+    value = value / 10;
+    buff[3] = value % 10 + 0x30 ;
+    value = value / 10;
+    buff[2] = value % 10 + 0x30;
+    value = value / 10;
+    buff[1] = value % 10 + 0x30;
+    buff[5] = '\0';
+}
+
 void instruction_counter_paint(){
     int offsetCol = 63;
     int offsetRow = 4;
-    int command;
-    int operand;
+    //int command;
+    //int operand;
     char buff[6];
     int value = sc_counter_get();
 
-    sc_commandDecode(value, &command, &operand);
+    //sc_commandDecode(value, &command, &operand);
 
     bc_box(offsetCol, offsetRow, 20, 3);
     mt_gotoXY(1 + offsetCol, offsetRow);
@@ -365,7 +387,8 @@ void instruction_counter_paint(){
     mt_gotoXY(7 + offsetCol ,offsetRow + 1);
     set_color(BlackFore,WhiteBack);
 
-    get_memory_buff(buff, command, operand);
+    //get_memory_buff(buff, command, operand);
+    get_mem_buff(buff, value);
     
     printf("%s", buff);
 }
