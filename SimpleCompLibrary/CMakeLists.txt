@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(CMAKE_C_FLAGS "-O0 -std=c99")
+set(CMAKE_C_FLAGS "-O0 -std=c99 -D_POSIX_C_SOURCE=200809L")
 
 ADD_LIBRARY(simpleComputer STATIC memory.c register.c memory.h register.h stat.h)
 ADD_LIBRARY(myTerm STATIC terminal.c terminal.h)
