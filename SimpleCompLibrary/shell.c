@@ -1,11 +1,21 @@
 #include "shell.h"
 
-struct itimerval nval, oval;
+void paintCell();
 // typedef void (*sighandler_t)(int);
 
 // sighandler_t signal(int signum, sighandler_t handler){
 //     printf("True");
 // }
+
+static void timerTimeoutHandler(int a){
+    (void)a;
+    int clockFlag;
+    sc_regGet(IMP, &clockFlag);
+    if (clockFlag)
+        return;
+    sc_counter_set((sc_counter_get() + 1) % SIZE);
+    instruction_counter_paint(0);
+}
 
 void set_color(ForegroundColors colorfg, BackgroundColors colorbg){
     mt_setfgcolor(colorfg);
@@ -45,11 +55,6 @@ void input_instruction(){
     //int command, operand, result;
     int value;
     scanf("%4d", &value);
-    //int retval = sc_commandEncode(command, operand, &result);
-    // if (retval != 0 || (command == 0)) {
-    //     printf("Input error");
-    //     rk_mytermregime(0, 0, 0, 0, 1);;
-    // }
     if (value > 9999){
         printf("Input error");
         rk_mytermregime(0,0,0,0,1);
@@ -136,7 +141,7 @@ void paintCell(){
     set_color(BlackFore,WhiteBack);
     operation_paint();
     set_color(BlackFore,WhiteBack);
-    instruction_counter_paint();
+    instruction_counter_paint(1);
     set_color(BlackFore,WhiteBack);
     accumulator_paint();
     set_color(BlackFore,WhiteBack);
@@ -146,10 +151,14 @@ void paintCell(){
 void signalhandler(int signo){
     if (signo == SIGALRM){
         instruction_iter();
-        instruction_counter_paint();
+        instruction_counter_paint(0);
+        paintCell();
     }
-    if (signo == SIGUSR1)
+    if (signo == SIGUSR1){
         printf("restart\n");
+        sc_memoryLoad("reset.bin");
+        sc_regInit();
+    }
 }
 
 void check_signal() {
@@ -159,14 +168,33 @@ void check_signal() {
         printf("\n cant't catch SIGUSR1\n");
 }
 
+void reRun(){
+    sc_memoryLoad("reset.bin");
+    sc_regInit();
+    sc_memoryInit();
+    sc_counter_set(0);
+    paintCell();
+    shellRun();
+
+}
+
 int shellRun(){ // main
 
-    nval.it_interval.tv_sec = 3;
+    struct sigaction act;
+    act.sa_handler = &timerTimeoutHandler;
+    act.sa_flags = SA_RESTART;
+    sigemptyset(&act.sa_mask);
+
+    sigaction(SIGALRM, &act, NULL);
+
+    struct itimerval nval, oval;
+
+    nval.it_interval.tv_sec = 30;
     nval.it_interval.tv_usec = 500;
     nval.it_value.tv_sec = 1;
     nval.it_value.tv_usec = 0;
-    //setitimer(ITIMER_REAL, &nval, &oval);
-
+    setitimer(ITIMER_REAL, &nval, &oval);
+    //check_signal();
     mt_clrscr();
 
     set_color(BlackFore,WhiteBack);
@@ -256,6 +284,12 @@ int shellRun(){ // main
             paintCell();
             break;
 
+        }
+
+        case KEY_r : {
+            raise(SIGUSR1);
+            reRun();
+            break;
         }
         case KEY_enter: {
             mt_gotoXY(1, 25);
@@ -371,7 +405,7 @@ void get_mem_buff(char buff[6], int value){
     buff[5] = '\0';
 }
 
-void instruction_counter_paint(){
+void instruction_counter_paint(int a){
     int offsetCol = 63;
     int offsetRow = 4;
     //int command;
@@ -380,12 +414,13 @@ void instruction_counter_paint(){
     int value = sc_counter_get();
 
     //sc_commandDecode(value, &command, &operand);
-
-    bc_box(offsetCol, offsetRow, 20, 3);
-    mt_gotoXY(1 + offsetCol, offsetRow);
-    printf("instructionCounter");
-    mt_gotoXY(7 + offsetCol ,offsetRow + 1);
-    set_color(BlackFore,WhiteBack);
+    if (a){
+        bc_box(offsetCol, offsetRow, 20, 3);
+        mt_gotoXY(1 + offsetCol, offsetRow);
+        printf("instructionCounter");
+        mt_gotoXY(7 + offsetCol ,offsetRow + 1);
+        set_color(BlackFore,WhiteBack);
+    }
 
     //get_memory_buff(buff, command, operand);
     get_mem_buff(buff, value);

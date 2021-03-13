@@ -58,7 +58,7 @@ int main() {
     // bc_getBigCharPos(a, 1, 0, &test);
     // printf("\n%d", test);
 
-    //sc_memoryInit();
+    sc_memoryInit();
     sc_regInit();
     shellRun();
     return 0;
