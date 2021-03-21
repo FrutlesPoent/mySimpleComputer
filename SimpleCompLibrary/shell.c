@@ -1,5 +1,7 @@
 #include "shell.h"
 
+int operCommand;
+
 void paintCell();
 // typedef void (*sighandler_t)(int);
 
@@ -114,7 +116,6 @@ void memory_index_paint(int index){
 
     get_memory_buff(buff, command, operand);
     printf("%s", buff);
-
 }
 
 void fillTerm(){
@@ -139,7 +140,7 @@ void paintCell(){
     set_color(BlackFore,WhiteBack);
     keys_paint();
     set_color(BlackFore,WhiteBack);
-    operation_paint();
+    operation_paint(positionRowShell * 10 + positionColShell);
     set_color(BlackFore,WhiteBack);
     instruction_counter_paint(1);
     set_color(BlackFore,WhiteBack);
@@ -149,6 +150,10 @@ void paintCell(){
 }
 
 void signalhandler(int signo){
+    int clockFlag;
+    sc_regGet(IMP, &clockFlag);
+    if (clockFlag)
+        return;
     if (signo == SIGALRM){
         instruction_iter();
         instruction_counter_paint(0);
@@ -250,7 +255,7 @@ int shellRun(){ // main
             mt_gotoXY(1,25);
             input_instruction();
             getchar();
-            //instruction_counter_paint();
+            instruction_counter_paint();
             paintCell();
             break;
         }
@@ -381,17 +386,61 @@ void keys_paint(){
     printf("F6 - instructionCounter");
 }
 
-void operation_paint()
+void get_oper_buff(char buff[7], int command, int operand){
+    buff[0] = '+';
+    buff[1] = command / 10 + 0x30;
+    buff[2] = command % 10 + 0x30;
+    buff[3] = ':';
+    buff[4] = operand / 10 + 0x30;
+    buff[5] = operand % 10 + 0x30;
+    buff[6] = '\0';
+
+}
+
+void operation_paint(int index)
 {
+    int sizeBuff = 7;
     int offsetCol = 63;
     int offsetRow = 7;
+    char buff[sizeBuff];
+    int retval;
+    int memValue;
+    int command, operand;
+
+    retval = sc_memoryGet(index, &memValue);
+    if (retval != 0) {
+        sc_wrong_str_memory(buff);
+        printf("%s", buff);
+    }
+
+    retval = sc_commandDecode(memValue, &command, &operand);
+    if (retval != 0){
+        sc_wrong_str_memory(buff);
+        printf("%s",buff);
+    }
 
     bc_box(offsetCol, offsetRow, 20, 3);
     mt_gotoXY(5 + offsetCol, offsetRow);
     printf(" Operation ");
     mt_gotoXY(7 + offsetCol ,offsetRow + 1);
-    printf("+00 : 00");
+    get_oper_buff(buff, command, operand);
+    printf("%s", buff);
+    //printf("+00 : 00");
 }
+
+// void operation_paint(int value){
+//     int sizeBuff = 7;
+//     int offsetCol = 63;
+//     int offsetRow = 7;
+//     char buff[sizeBuff];
+
+//     bc_box(offsetCol, offsetRow, 20, 3);
+//     mt_gotoXY(5 + offsetCol, offsetRow);
+//     printf(" Operation ");
+//     mt_gotoXY(7 + offsetCol ,offsetRow + 1);
+//     get_oper_buff(buff, value);
+//     printf("%s", buff);
+// }
 
 void get_mem_buff(char buff[6], int value){
     buff[0] = '+';
