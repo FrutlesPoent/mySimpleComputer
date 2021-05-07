@@ -21,7 +21,7 @@ int jmp(int operand);
 int jnge(int operand);
 int jz(int operand);
 int halt(int operand);
-// int jc(int operand);
+int jc(int operand);
 // void inputMemory();
 int removeValue(int value);
 #endif
