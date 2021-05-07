@@ -13,9 +13,9 @@ int sc_regSet(int sregister, int value) {
 
     if (sregister != OVERFLOW || sregister != DELZERO || sregister != OUTMEM || sregister != IMP ||
     sregister != COMMAND) {
-        if (value = 0)
-            flag = flag & ~ sregister;
-        else if (value = 1)
+        if (value == 0)
+            flag = ~sregister & flag;
+        else if (value == 1)
             flag = flag | sregister;
         else
             return 0;
@@ -66,7 +66,6 @@ int sc_commandDecode(int value, int* command, int* operand){
         return 1;
     }
 
-
     *command = value >> 7;
     *operand = value & 0x7F;
 
@@ -92,3 +91,6 @@ void sc_counter_set(int value){
 int sc_counter_get(){
     return counterReg;
 }
+
+
+

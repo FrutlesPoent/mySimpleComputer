@@ -7,6 +7,9 @@
 #include "readkey.h"
 #include <signal.h>
 #include <sys/time.h>
+#include "cpu.h"
+#include <unistd.h>
+#include <stdlib.h>
 
 #ifndef SHELL_H
 #define SHELL_H

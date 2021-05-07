@@ -1,23 +1,9 @@
 #include "shell.h"
 
 int operCommand;
+// int typeOfCommand[100];
 
 void paintCell();
-// typedef void (*sighandler_t)(int);
-
-// sighandler_t signal(int signum, sighandler_t handler){
-//     printf("True");
-// }
-
-static void timerTimeoutHandler(int a){
-    (void)a;
-    int clockFlag;
-    sc_regGet(IMP, &clockFlag);
-    if (clockFlag)
-        return;
-    sc_counter_set((sc_counter_get() + 1) % SIZE);
-    instruction_counter_paint(0);
-}
 
 void set_color(ForegroundColors colorfg, BackgroundColors colorbg){
     mt_setfgcolor(colorfg);
@@ -25,29 +11,42 @@ void set_color(ForegroundColors colorfg, BackgroundColors colorbg){
 }
 
 void inputMemory(){
-    printf("Input value");
+    printf("Input number or command\n");
     rk_mytermregime(1, 0, 0, 1, 1);
+    int choose;
+    scanf("%d", &typeOfCommand[positionRowShell * 10 + positionColShell]);
     int command, operand, result;
-    scanf("%2d%2d", &command, &operand);
-    int retval = sc_commandEncode(command, operand, &result);
-    if (retval != 0)
-        printf("Input error\n");
-    else
+    if (!typeOfCommand[positionRowShell * 10 + positionColShell]){
+        scanf("%2d%2d", &command, &operand);
+        int retval = sc_commandEncode(command, operand, &result);
+        if (retval != 0)
+            printf("Input error\n");
+        else
+            sc_memorySet((positionRowShell * 10 + positionColShell), result);
+    } else {
+        scanf("%4d", &result);
         sc_memorySet((positionRowShell * 10 + positionColShell), result);
+    }
 
     rk_mytermregime(0, 0, 0, 0, 1);
 }
-
 void instruction_iter(){
- int value = sc_counter_get();
- int valueReg;
- sc_regGet(IMP, &valueReg);
+    int value = sc_counter_get();
+    int valueReg;
+    int valueReg2;
+    sc_regGet(IMP, &valueReg2);
+    sc_regGet(IMP, &valueReg);
 
- if (!valueReg){
-      value += 1;
- }
+    if (!(valueReg && valueReg2)){
+        value += 1;
+    }
+    if (value == 100)
+        value = 0;
+    sc_counter_set(value);
 
- sc_counter_set(value);
+    positionColShell = value % 10;
+    positionRowShell = value / 10;
+
 }
 
 
@@ -56,12 +55,14 @@ void input_instruction(){
     rk_mytermregime(1, 0, 0, 1, 0);
     //int command, operand, result;
     int value;
-    scanf("%4d", &value);
-    if (value > 9999){
+    scanf("%2d", &value);
+    if (value > 99){
         printf("Input error");
         rk_mytermregime(0,0,0,0,1);
     }
     sc_counter_set(value);
+    positionColShell = value % 10;
+    positionRowShell = value / 10;
     rk_mytermregime(0, 0, 0, 0, 1);
 }
 
@@ -69,30 +70,30 @@ void input_accumulator(){
     printf("Input value:\n");
     rk_mytermregime(1, 0, 0, 1, 0);
     int command, operand, result;
-    scanf("%2d%2d", &command, &operand);
+    int number;
+    scanf("%4d", &number);
     int retval = sc_commandEncode(command, operand, &result);
     if (retval != 0) {
         printf("Input error");
         rk_mytermregime(0, 0, 0, 0, 1);;
     }
-    sc_accum_set(result);
+    sc_accum_set(number);
     rk_mytermregime(0, 0, 0, 0, 1);
 }
 
-void sc_wrong_str_memory(char buff[6]){
+void sc_wrong_str_memory(char buff[7]){
     buff[0] = '-';
-    for (int i = 1; i < 5; i++)
+    for (int i = 1; i < 6; i++)
         buff[i] = '0';
-    buff[5] = '\0';
+    buff[6] = '\0';
 }
 
 void get_memory_buff(char buff[6], int command, int operand){
-    buff[0] = '+';
-    buff[1] = command / 10 + 0x30;
-    buff[2] = command % 10 + 0x30;
-    buff[3] = operand / 10 + 0x30;
-    buff[4] = operand % 10 + 0x30;
-    buff[5] = '\0';
+    sprintf(buff, "+%02X%02X", command, operand); // same as itoa, but work
+}
+
+void get_memory_buff_number(char buff[6], int value){
+    sprintf(buff, "-%04X", value);
 }
 
 void memory_index_paint(int index){
@@ -107,14 +108,17 @@ void memory_index_paint(int index){
         sc_wrong_str_memory(buff);
         printf("%s", buff);
     }
-
     retval = sc_commandDecode(memValue, &command, &operand);
     if (retval != 0){
         sc_wrong_str_memory(buff);
         printf("%s",buff);
     }
+    if (!typeOfCommand[index]){
+        get_memory_buff(buff, command, operand);
+    } else{
+        get_memory_buff_number(buff, memValue);
+    }
 
-    get_memory_buff(buff, command, operand);
     printf("%s", buff);
 }
 
@@ -140,11 +144,11 @@ void paintCell(){
     set_color(BlackFore,WhiteBack);
     keys_paint();
     set_color(BlackFore,WhiteBack);
-    operation_paint(positionRowShell * 10 + positionColShell);
-    set_color(BlackFore,WhiteBack);
     instruction_counter_paint(1);
     set_color(BlackFore,WhiteBack);
     accumulator_paint();
+    set_color(BlackFore,WhiteBack);
+    operation_paint(positionRowShell * 10 + positionColShell);
     set_color(BlackFore,WhiteBack);
     box_paint();
 }
@@ -155,15 +159,24 @@ void signalhandler(int signo){
     if (clockFlag)
         return;
     if (signo == SIGALRM){
+        cu();
         instruction_iter();
-        instruction_counter_paint(0);
-        paintCell();
+        // instruction_counter_paint(0);
+    
+        mt_gotoXY(1, 25);
     }
     if (signo == SIGUSR1){
         printf("restart\n");
         sc_memoryLoad("reset.bin");
         sc_regInit();
     }
+}
+
+void stepCU(){
+    cu();
+    instruction_iter();
+    instruction_counter_paint(0);
+    paintCell();
 }
 
 void check_signal() {
@@ -175,6 +188,7 @@ void check_signal() {
 
 void reRun(){
     sc_memoryLoad("reset.bin");
+    sc_regSet(8, 1);
     sc_regInit();
     sc_memoryInit();
     sc_counter_set(0);
@@ -184,37 +198,40 @@ void reRun(){
 }
 
 int shellRun(){ // main
-
+    sc_regInit();
     struct sigaction act;
-    act.sa_handler = &timerTimeoutHandler;
+    act.sa_handler = &signalhandler;
     act.sa_flags = SA_RESTART;
     sigemptyset(&act.sa_mask);
 
     sigaction(SIGALRM, &act, NULL);
+    sigaction(SIGUSR1, &act, NULL);
+    sc_regSet(IMP, 1);
 
-    struct itimerval nval, oval;
+    struct itimerval nval;
 
-    nval.it_interval.tv_sec = 30;
+    nval.it_interval.tv_sec = 0;
     nval.it_interval.tv_usec = 500;
-    nval.it_value.tv_sec = 1;
-    nval.it_value.tv_usec = 0;
-    setitimer(ITIMER_REAL, &nval, &oval);
-    //check_signal();
-    mt_clrscr();
+    nval.it_value.tv_sec = 0;
+    nval.it_value.tv_usec = 500;
+    setitimer(ITIMER_REAL, &nval, NULL);
+    
 
+    mt_clrscr();
     set_color(BlackFore,WhiteBack);
     rk_mytermregime(0,0,0,0,1);
+    paintCell();
     paintCell();
 
     mt_gotoXY(1,25);
     enum Keys keys;
-    while(1){
-        check_signal();
+    while(1){ 
         rk_readkey(&keys);
         switch (keys){
         case KEY_right: {
             if (positionColShell < 9){
                 positionColShell += 1;
+                sc_counter_set(sc_counter_get() + 1);
                 paintCell();
             }
             break;
@@ -222,6 +239,7 @@ int shellRun(){ // main
         case KEY_left :{
             if (positionColShell > 0){
                 positionColShell -= 1;
+                sc_counter_set(sc_counter_get() - 1);
                 paintCell();
             }
             break;
@@ -229,6 +247,7 @@ int shellRun(){ // main
         case KEY_up: {
             if (positionRowShell > 0) {
                 positionRowShell -= 1;
+                sc_counter_set(sc_counter_get() - 10);
                 paintCell();
             }
             break;
@@ -236,6 +255,7 @@ int shellRun(){ // main
         case KEY_down: {
             if (positionRowShell < 9){
                 positionRowShell += 1;
+                sc_counter_set(sc_counter_get() + 10);
                 paintCell();
             }
             break;
@@ -292,17 +312,30 @@ int shellRun(){ // main
         }
 
         case KEY_r : {
-            raise(SIGUSR1);
-            reRun();
-            break;
-        }
-        case KEY_enter: {
-            mt_gotoXY(1, 25);
-            inputMemory();
-            getchar();
+            sc_regSet(IMP, 0);
             paintCell();
             break;
         }
+        case KEY_enter: {
+            int value;
+            sc_regGet(IMP, &value);
+            sc_regSet(IMP, 1);
+            mt_gotoXY(1, 25);
+            inputMemory();
+            getchar();
+            if (!value)
+                sc_regSet(IMP, 0);
+            paintCell();
+            break;
+        }
+        case KEY_t:{
+            sc_regSet(IMP, 0);
+            signalhandler(SIGALRM);
+            sc_regSet(IMP, 1);
+            // paintCell();
+            break;
+        }
+
         }
     }
 
@@ -386,61 +419,53 @@ void keys_paint(){
     printf("F6 - instructionCounter");
 }
 
-void get_oper_buff(char buff[7], int command, int operand){
-    buff[0] = '+';
-    buff[1] = command / 10 + 0x30;
-    buff[2] = command % 10 + 0x30;
-    buff[3] = ':';
-    buff[4] = operand / 10 + 0x30;
-    buff[5] = operand % 10 + 0x30;
-    buff[6] = '\0';
+void get_oper_buff(char buff[9], int value){
+    sprintf(buff, "-%04d", value);
+}
 
+void get_oper_buff_command(char buff[9], int command, int operand){
+    sprintf(buff, "+%02d : %02d", command, operand);
+}
+
+void sc_wrong_str_oper(char buff[7]){
+    buff[0] = '-';
+    for (int i = 1; i < 6; i++)
+        buff[i] = '0';
+    buff[3] = ':';
+    buff[6] = '\0';
 }
 
 void operation_paint(int index)
 {
-    int sizeBuff = 7;
+    int memValue;
+    int command;
+    int operand;
+    int retval;
     int offsetCol = 63;
     int offsetRow = 7;
-    char buff[sizeBuff];
-    int retval;
-    int memValue;
-    int command, operand;
-
-    retval = sc_memoryGet(index, &memValue);
-    if (retval != 0) {
-        sc_wrong_str_memory(buff);
-        printf("%s", buff);
-    }
-
-    retval = sc_commandDecode(memValue, &command, &operand);
-    if (retval != 0){
-        sc_wrong_str_memory(buff);
-        printf("%s",buff);
-    }
+    char buff[9];
 
     bc_box(offsetCol, offsetRow, 20, 3);
     mt_gotoXY(5 + offsetCol, offsetRow);
     printf(" Operation ");
-    mt_gotoXY(7 + offsetCol ,offsetRow + 1);
-    get_oper_buff(buff, command, operand);
+    mt_gotoXY(7 + offsetCol, offsetRow + 1);
+    retval = sc_memoryGet(index, &memValue);
+    if (retval != 0) {
+        sc_wrong_str_oper(buff);
+        printf("%s", buff);
+    }
+    if (!typeOfCommand[positionRowShell * 10 + positionColShell]){
+        retval = sc_commandDecode(memValue, &command, &operand);
+        if (retval != 0) {
+            sc_wrong_str_oper(buff);
+            printf("%s", buff);
+        }
+        get_oper_buff_command(buff, command, operand);
+    } else {
+        get_oper_buff(buff, memValue);
+    }
     printf("%s", buff);
-    //printf("+00 : 00");
 }
-
-// void operation_paint(int value){
-//     int sizeBuff = 7;
-//     int offsetCol = 63;
-//     int offsetRow = 7;
-//     char buff[sizeBuff];
-
-//     bc_box(offsetCol, offsetRow, 20, 3);
-//     mt_gotoXY(5 + offsetCol, offsetRow);
-//     printf(" Operation ");
-//     mt_gotoXY(7 + offsetCol ,offsetRow + 1);
-//     get_oper_buff(buff, value);
-//     printf("%s", buff);
-// }
 
 void get_mem_buff(char buff[6], int value){
     buff[0] = '+';
@@ -461,6 +486,7 @@ void instruction_counter_paint(int a){
     //int operand;
     char buff[6];
     int value = sc_counter_get();
+    printf("%d", value);
 
     //sc_commandDecode(value, &command, &operand);
     if (a){
@@ -477,6 +503,14 @@ void instruction_counter_paint(int a){
     printf("%s", buff);
 }
 
+void get_memory_accum(char buff[6], int value){
+    sprintf(buff, "-%04d", value);
+}
+
+void get_memory_buff_accum_plus(char buff[6], int value){
+    sprintf(buff, "+%04d", value);
+}
+
 void accumulator_paint(){
     int offsetCol = 63;
     int offsetRow = 1;
@@ -485,14 +519,16 @@ void accumulator_paint(){
     int operand;
     char buff[6];
 
-    sc_commandDecode(value, &command, &operand);
 
     bc_box(offsetCol, offsetRow, 20, 3);
     mt_gotoXY(5 + offsetCol, offsetRow);
     printf("accumulator");
     mt_gotoXY(7 + offsetCol, offsetRow + 1);
 
-    get_memory_buff(buff, command, operand);
+    if (value >= 0)
+        get_memory_buff_accum_plus(buff, value);
+    else 
+        get_memory_accum(buff, value);
 
     printf("%s", buff);
 }
@@ -557,6 +593,36 @@ void get_minus(int value[2]){
     value[1] = 126;
 }
 
+void get_A(int value[2]) {
+    value[0] = 2118269952 ;
+    value[1] = 4342338;
+}
+
+void get_B(int value[2]) {
+    value[0] = 1044528640 ;
+    value[1] = 4080194;
+}
+
+void get_C(int value[2]) {
+    value[0] = 37895168 ;
+    value[1] = 3949058;
+}
+
+void get_D(int value[2]) {
+    value[0] = 1111637504 ;
+    value[1] = 4080194;
+}
+
+void get_E(int value[2]) {
+    value[0] = 2114092544 ;
+    value[1] = 8258050;
+}
+
+void get_F(int value[2]) {
+    value[0] = 33717760 ;
+    value[1] = 131646;
+}
+
 
 void switchValue(int value, int valueChar[2]){
     switch (value) {
@@ -590,6 +656,24 @@ void switchValue(int value, int valueChar[2]){
     case 9:
         get_nine(valueChar);
         return;
+    case 10:
+        get_A(valueChar);
+        return;
+    case 11:
+        get_B(valueChar);
+        return;
+    case 12: 
+        get_C(valueChar);
+        return;
+    case 13:
+        get_D(valueChar);
+        return;
+    case 14:
+        get_E(valueChar);
+        return;
+    case 15:
+        get_F(valueChar);
+        return;
     }
 }
 
@@ -603,40 +687,67 @@ void box_paint(){
 
     bc_box(offsetCol, offsetRow, 46 , 10);
     sc_memoryGet(positionRowShell * 10 + positionColShell, &memoryValue);
-    if (sc_commandDecode(memoryValue, &command, &operand) != 0){
-        command = 0;
-        operand = 0;
+
+    if (typeOfCommand[positionRowShell * 10 + positionColShell]){
+        int val1,val2, val3, val4;
+        val4 = memoryValue % 16;
+        memoryValue = memoryValue / 16;
+        val3 = memoryValue % 16;
+        memoryValue = memoryValue / 16;
+        val2 = memoryValue % 16;
+        memoryValue = memoryValue / 16;
+        val1 = memoryValue % 16;
         get_minus(valueChar);
         bc_printBigChar(valueChar, offsetCol + 1 , offsetRow + 1, BlackFore, WhiteBack);
         offsetCol += 9;
-        get_zero(valueChar);
+        switchValue(val1, valueChar);
         bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
         offsetCol += 9;
-        get_zero(valueChar);
+        switchValue(val2, valueChar);
         bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
         offsetCol += 9;
-        get_zero(valueChar);
+        switchValue(val3, valueChar);
         bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
         offsetCol += 9;
-        get_zero(valueChar);
+        switchValue(val4, valueChar);
         bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
-    } else {
-        get_plus(valueChar);
-        bc_printBigChar(valueChar, offsetCol + 1 , offsetRow + 1, BlackFore, WhiteBack);
-        offsetCol += 9;
-        switchValue(command / 10, valueChar);
-        bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
-        offsetCol += 9;
-        switchValue(command % 10, valueChar);
-        bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
-        offsetCol += 9;
-        switchValue(command / 10, valueChar);
-        bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
-        offsetCol += 9;
-        switchValue(command % 10, valueChar);
-        bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
+        return;
+    } else{
+
+        if (sc_commandDecode(memoryValue, &command, &operand) != 0){
+            command = 0;
+            operand = 0;
+            bc_printBigChar(valueChar, offsetCol + 1 , offsetRow + 1, BlackFore, WhiteBack);
+            offsetCol += 9;
+            get_zero(valueChar);
+            bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
+            offsetCol += 9;
+            get_zero(valueChar);
+            bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
+            offsetCol += 9;
+            get_zero(valueChar);
+            bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
+            offsetCol += 9;
+            get_zero(valueChar);
+            bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
+        } else {
+            get_plus(valueChar);
+            bc_printBigChar(valueChar, offsetCol + 1 , offsetRow + 1, BlackFore, WhiteBack);
+            offsetCol += 9;
+            switchValue(command / 16, valueChar);
+            bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
+            offsetCol += 9;
+            switchValue(command % 16, valueChar);
+            bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
+            offsetCol += 9;
+            switchValue(operand / 16, valueChar);
+            bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
+            offsetCol += 9;
+            switchValue(operand % 16, valueChar);
+            bc_printBigChar(valueChar, offsetCol , offsetRow + 1, BlackFore, WhiteBack);
+        }
+        mt_gotoXY(1, 25);
     }
-    mt_gotoXY(1, 25);
 }
 
 

@@ -7,6 +7,7 @@ ADD_LIBRARY(myTerm STATIC terminal.c terminal.h)
 ADD_LIBRARY(BigChars STATIC myBigChars.c myBigChars.h)
 ADD_LIBRARY(ShellMy STATIC shell.c shell.h)
 ADD_LIBRARY(MyReadKey STATIC readkey.c readkey.h)
+ADD_LIBRARY(CPU STATIC cpu.c cpu.h)
 
 SET(APP_EXE Program)
 
@@ -15,4 +16,4 @@ TARGET_LINK_LIBRARIES(BigChars myTerm)
 TARGET_LINK_LIBRARIES(${APP_EXE} MyReadKey BigChars)
 TARGET_LINK_LIBRARIES(${APP_EXE} ShellMy MyReadKey)
 
-TARGET_LINK_LIBRARIES(${APP_EXE} simpleComputer BigChars ShellMy)
+TARGET_LINK_LIBRARIES(${APP_EXE} simpleComputer BigChars ShellMy CPU)
