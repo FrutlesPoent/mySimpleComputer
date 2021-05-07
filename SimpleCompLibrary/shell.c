@@ -330,9 +330,8 @@ int shellRun(){ // main
         }
         case KEY_t:{
             sc_regSet(IMP, 0);
-            signalhandler(SIGALRM);
+            stepCU();
             sc_regSet(IMP, 1);
-            // paintCell();
             break;
         }
 
