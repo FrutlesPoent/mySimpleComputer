@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/readkey.c
+stdio.h
+-
+readkey.h
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/readkey.h
+
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/readkey.h
+stdio.h
+-
+termios.h
+-
+unistd.h
+-
+fcntl.h
+-
+

@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/terminal.c
+stdio.h
+-
+termios.h
+-
+sys/ioctl.h
+-
+terminal.h
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/terminal.h
+
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/terminal.h
+stdio.h
+-
+termios.h
+-
+sys/ioctl.h
+-
+

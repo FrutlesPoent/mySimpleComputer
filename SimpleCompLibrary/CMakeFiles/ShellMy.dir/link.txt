@@ -1,0 +1,2 @@
+/usr/bin/ar qc libShellMy.a  CMakeFiles/ShellMy.dir/shell.c.o
+/usr/bin/ranlib libShellMy.a

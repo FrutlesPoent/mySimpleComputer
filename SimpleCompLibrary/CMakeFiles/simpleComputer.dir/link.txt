@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsimpleComputer.a  CMakeFiles/simpleComputer.dir/memory.c.o CMakeFiles/simpleComputer.dir/register.c.o
+/usr/bin/ranlib libsimpleComputer.a

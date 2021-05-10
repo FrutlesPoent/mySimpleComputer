@@ -1,0 +1,2 @@
+/usr/bin/ar qc libmyTerm.a  CMakeFiles/myTerm.dir/terminal.c.o
+/usr/bin/ranlib libmyTerm.a

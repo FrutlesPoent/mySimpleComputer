@@ -1,0 +1,9 @@
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/CMakeFiles/rebuild_cache.dir
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/CMakeFiles/edit_cache.dir
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/CMakeFiles/Program.dir
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/CMakeFiles/CPU.dir
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/CMakeFiles/MyReadKey.dir
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/CMakeFiles/ShellMy.dir
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/CMakeFiles/BigChars.dir
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/CMakeFiles/myTerm.dir
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/CMakeFiles/simpleComputer.dir

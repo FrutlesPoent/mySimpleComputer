@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/memory.c
+memory.h
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/memory.h
+stat.h
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/stat.h
+register.h
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/register.h
+stdio.h
+-
+
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/memory.h
+stdio.h
+-
+stat.h
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/stat.h
+fcntl.h
+-
+unistd.h
+-
+errno.h
+-
+stdio.h
+-
+
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/register.h
+stdio.h
+-
+
+/mnt/c/Users/frutl/Desktop/VYZ/prog/Architecture/src/SimpleCompLibrary/stat.h
+stdio.h
+-
+

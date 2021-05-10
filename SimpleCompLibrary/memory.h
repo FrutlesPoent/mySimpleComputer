@@ -1,5 +1,9 @@
 #include <stdio.h>
 #include "stat.h"
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdio.h>
 
 #ifndef MEMORY_H
 #define MEMORY_H

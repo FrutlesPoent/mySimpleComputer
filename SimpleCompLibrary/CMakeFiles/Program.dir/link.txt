@@ -1,0 +1,1 @@
+/usr/bin/cc -O0 -std=c99 -D_POSIX_C_SOURCE=200809L  -rdynamic CMakeFiles/Program.dir/main.c.o  -o Program  libMyReadKey.a libBigChars.a libShellMy.a libMyReadKey.a libsimpleComputer.a libBigChars.a libShellMy.a libCPU.a libmyTerm.a 

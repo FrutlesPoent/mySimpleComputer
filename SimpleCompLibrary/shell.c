@@ -1,7 +1,6 @@
 #include "shell.h"
 
 int operCommand;
-// int typeOfCommand[100];
 
 void paintCell();
 
@@ -25,7 +24,7 @@ void inputMemory(){
             sc_memorySet((positionRowShell * 10 + positionColShell), result);
     } else {
         scanf("%4d", &result);
-        sc_memorySet((positionRowShell * 10 + positionColShell), result);
+        sc_memorySet((positionRowShell * 10 + positionColShell), result + 32768 );
     }
 
     rk_mytermregime(0, 0, 0, 0, 1);
@@ -108,14 +107,15 @@ void memory_index_paint(int index){
         sc_wrong_str_memory(buff);
         printf("%s", buff);
     }
-    retval = sc_commandDecode(memValue, &command, &operand);
-    if (retval != 0){
-        sc_wrong_str_memory(buff);
-        printf("%s",buff);
-    }
-    if (!typeOfCommand[index]){
+    if (memValue < 32768 ){
+        retval = sc_commandDecode(memValue, &command, &operand);
+        if (retval != 0){
+            sc_wrong_str_memory(buff);
+            printf("%s",buff);
+        }
         get_memory_buff(buff, command, operand);
-    } else{
+    } else {
+        memValue -= 32768; 
         get_memory_buff_number(buff, memValue);
     }
 
@@ -282,14 +282,14 @@ int shellRun(){ // main
         case KEY_l: {
             mt_gotoXY(1, 25);
             rk_mytermregime(1, 0, 0, 1, 1);
-            printf("file name: \n");
-            char filename[100];
-            scanf("%s", filename);
+            printf("file name:\n");
+            char fileName[250];
+            scanf("%s", fileName);
             getchar();
             rk_mytermregime(0, 0, 0, 0, 1);
-            sc_memoryLoad(filename);
+            sc_memoryLoad(fileName);
             paintCell();
-            break;        
+            break;    
             }
         case KEY_i: {
             sc_memoryLoad("reset.bin");
@@ -453,7 +453,8 @@ void operation_paint(int index)
         sc_wrong_str_oper(buff);
         printf("%s", buff);
     }
-    if (!typeOfCommand[positionRowShell * 10 + positionColShell]){
+    if (memValue < 32768)
+    {
         retval = sc_commandDecode(memValue, &command, &operand);
         if (retval != 0) {
             sc_wrong_str_oper(buff);
@@ -461,6 +462,7 @@ void operation_paint(int index)
         }
         get_oper_buff_command(buff, command, operand);
     } else {
+        memValue -= 32768;
         get_oper_buff(buff, memValue);
     }
     printf("%s", buff);
@@ -687,7 +689,8 @@ void box_paint(){
     bc_box(offsetCol, offsetRow, 46 , 10);
     sc_memoryGet(positionRowShell * 10 + positionColShell, &memoryValue);
 
-    if (typeOfCommand[positionRowShell * 10 + positionColShell]){
+    if (memoryValue >= 32768){
+        memoryValue -= 32768;
         int val1,val2, val3, val4;
         val4 = memoryValue % 16;
         memoryValue = memoryValue / 16;

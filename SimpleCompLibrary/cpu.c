@@ -23,7 +23,7 @@ void inputMemorySec(int addres){
             sc_memorySet((operand), result);
     } else {
         scanf("%4d", &result);
-        sc_memorySet((operand), result);
+        sc_memorySet((operand), result + 32768);
     }
 
     rk_mytermregime(0, 0, 0, 0, 1);
