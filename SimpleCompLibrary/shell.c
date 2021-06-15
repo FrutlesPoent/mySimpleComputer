@@ -9,26 +9,26 @@ void set_color(ForegroundColors colorfg, BackgroundColors colorbg){
     mt_setbgcolor(colorbg);
 }
 
-void inputMemory(){
-    printf("Input number or command\n");
-    rk_mytermregime(1, 0, 0, 1, 1);
-    int choose;
-    scanf("%d", &typeOfCommand[positionRowShell * 10 + positionColShell]);
-    int command, operand, result;
-    if (!typeOfCommand[positionRowShell * 10 + positionColShell]){
-        scanf("%2d%2d", &command, &operand);
-        int retval = sc_commandEncode(command, operand, &result);
-        if (retval != 0)
-            printf("Input error\n");
-        else
-            sc_memorySet((positionRowShell * 10 + positionColShell), result);
-    } else {
-        scanf("%4d", &result);
-        sc_memorySet((positionRowShell * 10 + positionColShell), result + 32768 );
-    }
+// void inputMemory(){
+//     printf("Input number or command\n");
+//     rk_mytermregime(1, 0, 0, 1, 1);
+//     int choose;
+//     scanf("%d", &typeOfCommand[positionRowShell * 10 + positionColShell]);
+//     int command, operand, result;
+//     if (!typeOfCommand[positionRowShell * 10 + positionColShell]){
+//         scanf("%2d%2d", &command, &operand);
+//         int retval = sc_commandEncode(command, operand, &result);
+//         if (retval != 0)
+//             printf("Input error\n");
+//         else
+//             sc_memorySet((positionRowShell * 10 + positionColShell), result);
+//     } else {
+//         scanf("%4d", &result);
+//         sc_memorySet((positionRowShell * 10 + positionColShell), result + 32768 );
+//     }
 
-    rk_mytermregime(0, 0, 0, 0, 1);
-}
+//     rk_mytermregime(0, 0, 0, 0, 1);
+// }
 void instruction_iter(){
     int value = sc_counter_get();
     int valueReg;
@@ -161,10 +161,17 @@ void signalhandler(int signo){
     if (signo == SIGALRM){
         cu();
         instruction_iter();
-        // instruction_counter_paint(0);
-    
+        instruction_counter_paint(1);
+        memory_paint();
+        // box_paint();
+        // flags_paint();
+        accumulator_paint();
+        // paintCell();
+        // getchar();
         mt_gotoXY(1, 25);
     }
+    // getchar();
+    // instruction_counter_paint(1);
     if (signo == SIGUSR1){
         printf("restart\n");
         sc_memoryLoad("reset.bin");
@@ -175,8 +182,11 @@ void signalhandler(int signo){
 void stepCU(){
     cu();
     instruction_iter();
-    instruction_counter_paint(0);
-    paintCell();
+    // instruction_counter_paint(1);
+    memory_paint();
+    box_paint();
+    accumulator_paint();
+    // paintCell();
 }
 
 void check_signal() {
@@ -275,7 +285,7 @@ int shellRun(){ // main
             mt_gotoXY(1,25);
             input_instruction();
             getchar();
-            instruction_counter_paint();
+            // instruction_counter_paint();
             paintCell();
             break;
         }
@@ -313,7 +323,7 @@ int shellRun(){ // main
 
         case KEY_r : {
             sc_regSet(IMP, 0);
-            paintCell();
+            // paintCell();
             break;
         }
         case KEY_enter: {
@@ -321,7 +331,7 @@ int shellRun(){ // main
             sc_regGet(IMP, &value);
             sc_regSet(IMP, 1);
             mt_gotoXY(1, 25);
-            inputMemory();
+            inputMemory(sc_counter_get());
             getchar();
             if (!value)
                 sc_regSet(IMP, 0);
@@ -502,6 +512,7 @@ void instruction_counter_paint(int a){
     get_mem_buff(buff, value);
     
     printf("%s", buff);
+    mt_gotoXY(1, 25);
 }
 
 void get_memory_accum(char buff[6], int value){

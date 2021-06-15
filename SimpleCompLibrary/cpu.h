@@ -10,12 +10,14 @@
 #include <signal.h>
 #include "readkey.h"
 int typeOfCommand[100];
+static int positionRowShell = 0;
+static int positionColShell = 0;
 
 int alu(int command, int operand);
 void cpu();
 void memoryLoad(int operand);
-// void inputMemory(int operand);
-void load(int operand);
+void inputMemory(int operand);
+int load(int operand);
 void restore(int operand);
 int jmp(int operand);
 int jnge(int operand);

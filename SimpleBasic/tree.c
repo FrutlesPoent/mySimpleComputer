@@ -6,6 +6,7 @@ Node* createNode() {
     node->right = NULL;
     node->operation = NULL;
     node->data = -1;
+    node->literalLocation = -1;
     return node;
 }
 
@@ -130,13 +131,40 @@ struct OpReturn calcOperation(char* func) {
     for (i = 0; func[i] != ')' && func[i] != '\0'; i++) {
         if (func[i] == ' ') // if we hit space then continue
             continue;
-        if (isupper(func[i])) {
+        if (isupper(func[i]) || isdigit(func[i])) {
             if (node->operation == NULL){ // if we don't have in node operation
                 node->left = createNode(); // than we create new one to put data in him
-                node->left->data = func[i];
+                if (isdigit(func[i])) {
+                    char buff[8];
+                    int index = 0;
+                    for (; func[i] != ' ' && func[i] != '\0' && func[i] != ')'; i++) {
+                        buff[index++] = func[i];
+                    }
+                    buff[index] = '\0';
+                    int val = atoi(buff);
+                    int location = getLiteralLocation(val);
+                    node->left->literalLocation = location;
+                    node->left->data = getLitName(val);
+                    i--;
+                } else
+                    node->left->data = func[i];
             } else { // else we create to the right
-                node->right = createNode(); 
-                node->right->data = func[i];
+                node->right = createNode();
+                if (isdigit(func[i])) {
+                    char buff[8];
+                    int index = 0;
+                    for (; func[i] != ' ' && func[i] != '\0' && func[i] != ')'; i++) {
+                        buff[index++] = func[i];
+                    }
+                    buff[index] = '\0';
+                    int val = atoi(buff);
+                    int location = getLiteralLocation(val);
+                    node->right->literalLocation = location;
+                    node->right->data = getLitName(val);
+                    i--;
+
+                } else 
+                     node->right->data = func[i];
             }
         } else if (isOp(func[i])) { // if it's not instruction 
             if (node->operation == NULL) {

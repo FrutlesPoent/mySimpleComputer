@@ -1,0 +1,7 @@
+01 INPUT A
+02 LET B = 1
+03 LET C = 2
+04 LET B = B * C
+05 IF C!= A + 1 GOTO 4
+06 PRINT B
+07 END

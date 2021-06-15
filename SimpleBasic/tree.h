@@ -4,11 +4,13 @@
 #include <ctype.h>
 #include <malloc.h>
 #include "instruction.h"
+#include <stdlib.h>
 
 typedef char (*NodeFunc)(char,char);
 
 typedef struct _Node {
     char data;
+    int literalLocation;
     struct _Node* left; // pointer to left part of tree
     struct _Node* right; // pointer to the right part of tree
     NodeFunc operation;

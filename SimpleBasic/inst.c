@@ -92,15 +92,15 @@ int letInstruction(char* inst) {
             break;
         }
     }
-    if (!flag) // if we didn't get '=' then it' wrong line
+    if (!flag) // if we didn't get '=' then it's wrong line
         return -2;
     char rVal = evals(inst + i + 1); // result of right side of let
     if (!variableInAccum(rVal)) {
         moveAccum(rVal);
     }
     addVariable(lVal);
-    // storeAccum(lVal);
-    addInstructionFirst("STORE", lVal);
+    storeAccum(lVal);
+    // addInstructionFirst("STORE", lVal);
     return 0;
 }
 
@@ -112,7 +112,21 @@ int ifInstruction(char* operand) {
     {
         if (operand[i] == ' ')
             continue;
-        if (isupper(operand[i]))
+        if (isdigit(operand[i])) {
+            char buff[8];
+            int index = 0;
+            for (; i < lenght; i++){
+                if (isdigit(operand[i]))
+                    buff[index] = operand[i];
+                else
+                    break;
+            }
+            buff[index] = '\0';
+            int val = atoi(buff);
+            lVal = getLitName(val);
+            break;
+        }
+        else if (isupper(operand[i]))
         {
             lVal = operand[i];
             break;
@@ -128,7 +142,7 @@ int ifInstruction(char* operand) {
             continue;
         switch (operand[i]) {
             case '!': {
-                if (operand[i++] == '=') // if !=
+                if (operand[++i] == '=') // if !=
                     flag = 1;
                 else
                     return -3;
@@ -141,10 +155,10 @@ int ifInstruction(char* operand) {
                 flag = 3;
                 break;
             case '=':
-            if (operand[i++] == '=') // if '=='
+            if (operand[++i] == '=') // if '=='
                 flag = 4;
             else
-                return -1;
+                return -3;
             break;
         }
     }
@@ -213,18 +227,20 @@ int gotoInstruction(char* inst) {
     for (int i = 0; i < stringLenght; i++) {
         if (inst[i] == ' ')
             continue;
-        if (!isdigit(inst[i]))
-            return -1;
-        stringNumber[j] = inst[i];
-        j++;
+        if (isdigit(inst[i])){
+            stringNumber[j] = inst[i];
+            j++;
+        }
     }
     stringNumber[j] = '\0';
     int string = atoi(stringNumber);
     int location = instructionLocationByString(string);
     if (location == -1) {
-        return -1;
+        addInstructionPromise("JUMP", string);
+    } else {
+        addInstructionSecond("JUMP", location);
     }
-    addInstructionSecond("JUMP", location);
+    // addInstructionSecond("JUMP", location);
     return 0;
 }
 

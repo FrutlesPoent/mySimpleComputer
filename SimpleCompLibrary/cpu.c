@@ -9,49 +9,67 @@ int removeValue(int value){
     return buff;
 }
 
-void inputMemorySec(int addres){
-    printf("Input number or command\n");
+void inputMemory(int addres) {
+    printf("Command or number\n");
     rk_mytermregime(1, 0, 0, 1, 1);
     scanf("%d", &typeOfCommand[addres]);
-    int command, result, operand;
-    if (!typeOfCommand[addres]){
-        scanf("%2d%2d", &command, &operand);
+    if (typeOfCommand[positionRowShell * 10 + positionColShell] > 1)
+    {
+        rk_mytermregime(0,0,0,0,1);
+        return;
+    }
+    printf("Input value");
+
+    if (!typeOfCommand[addres]) {
+        int command, result, operand;
+        scanf("%2d%4d", &command, &operand);
         int retval = sc_commandEncode(command, operand, &result);
         if (retval != 0)
-            printf("Input error\n");
+            printf("Error input");
         else
-            sc_memorySet((operand), result);
+            sc_memorySet(addres, result);
     } else {
+        int result;
         scanf("%4d", &result);
-        sc_memorySet((operand), result + 32768);
+        sc_memorySet(addres, result + 32768);
     }
-
     rk_mytermregime(0, 0, 0, 0, 1);
+    getchar();
+    mt_gotoXY(1, 23);
+    for (int i = 23; i < 27; i++)
+    {
+        for (int j = 1; j < 30; j++)
+            putchar(' ');
+        putchar('\n');
+    }
+    mt_gotoXY(1, 23);
+
 }
 
 void loadAccum(int operand){
     int value;
     sc_memoryGet(operand, &value);
-    sc_accum_set(value);
+    sc_accum_set(value - 32768);
 }
 
 void memoryLoad(int operand){
-    mt_gotoXY(1, 25);
+    mt_gotoXY(1, 23);
     printf("Value\n");
     int value; 
     sc_memoryGet(operand, &value);
-    printf("%04X", value);
-    paintCell();
+    printf("Answer = %04d", value - 32768);
+    mt_gotoXY(22,77);
 }
 
-void load(int operand){
+int load(int operand){
     if (operand >= SIZE)
-        return -1;
+        return -1; 
     loadAccum(operand);
 }
 
 void restore(int operand){
-    int value = sc_accum_get();
+    int value = sc_accum_get() + 32768;
+    typeOfCommand[operand] = 1;
     sc_memorySet(operand, value);
 }
 
@@ -67,26 +85,25 @@ int jmp(int operand){
 }
 
 int jneg(int operand){
-    int value = removeValue(sc_accum_get());
+    int value = sc_accum_get();
     if (value < 0){
-        operand -= 1;
-        sc_counter_set(operand);
+        sc_counter_set(operand - 1);
     }
     return 0;
 }
 
 int jz(int operand){
-    int value = removeValue(sc_accum_get());
-    if((value) == 0){
-        operand -= 1;
-        sc_counter_set(operand);
+    int value = sc_accum_get();
+    if(value == 0){
+        // operand -= 1;
+        sc_counter_set(operand - 1);
     }
     return 0;
 }
 
 int halt(int a){
-    (void)a;
-    raise(SIGUSR1);
+    // (void)a;
+    // raise(SIGUSR1);
     return 0;
 }
 
@@ -96,6 +113,7 @@ int jc(int operand){
     if (operand >= SIZE)
         return -1;
     sc_memoryGet(operand, &val1);
+    val1 -= 32768;
     if (val1 + value > 9999){
         sc_counter_set(operand);
     }
@@ -111,6 +129,7 @@ int alu(int command, int operand) {
             if (operand >= SIZE)
                 return -1;
             sc_memoryGet(operand, &val1);
+            val1 -=32768;
             value += val1;
             sc_accum_set(value);
             return 0;
@@ -118,6 +137,7 @@ int alu(int command, int operand) {
             if (operand >= SIZE)
                 return -1;
             sc_memoryGet(operand, &val1);
+            val1 -= 32768;
             value -= val1;
             sc_accum_set(value);
             return 0;
@@ -125,6 +145,7 @@ int alu(int command, int operand) {
             if (operand >= SIZE)
                 return -1;
             sc_memoryGet(operand, &val1);
+            val1 -= 32768;
             value /= val1;
             sc_accum_set(value);
             return 0;
@@ -132,6 +153,7 @@ int alu(int command, int operand) {
             if (operand >= SIZE)
                 return -1;
             sc_memoryGet(operand, &val1);
+            val1 -= 32768;
             value *= val1;
             sc_accum_set(value);
             return 0;
@@ -161,7 +183,7 @@ int cu(){
             case 10:
             if (operand >= SIZE)
                 return - 1;
-            inputMemorySec(operand);
+            inputMemory(operand);
             return 0;
         case 11:
             if (operand >= SIZE)
@@ -175,7 +197,7 @@ int cu(){
             restore(operand);
             return 0;
         case 40:
-            jmp(operand);
+            sc_counter_set(operand - 1);
             return 0;
         case 41:
             jneg(operand);

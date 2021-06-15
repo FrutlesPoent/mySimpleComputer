@@ -4,6 +4,7 @@
 #include "inst.h"
 #include <malloc.h>
 #include <ctype.h>
+#include <string.h>
 
 int readLine(FILE *fd, char* buff){
     char symbol;
@@ -43,6 +44,36 @@ int main(int argc, char** argv){
         }
     }
     char* buff = malloc(sizeof(char) * 500);
+
+    while(!feof(in)) {
+        int strLen =  readLine(in, buff);
+        if (strLen == 0)
+            continue;
+        int i = 3, j = 0;
+        char instr[10];
+        int flag = 0;
+        for (; i < strLen; i++) {
+            if (buff[i] == ' '){
+                if (flag)
+                    break;
+                else
+                    continue;
+            }
+            if (isupper(buff[i])){
+                flag = 1;
+                instr[j++] = buff[i];
+            } else {
+                printf("Wrong instruction\n");
+                return -4;
+            }
+            instr[j] = '\0';
+            if (!strcmp("LET", instr) || !strcmp("IF", instr)) {
+                findLiterals(&buff[i + j]);
+            }
+        }
+    }
+    fseek(in, 0, SEEK_SET);
+
     while(!feof(in)) {
         int stringLenght = readLine(in, buff);//read line from file
 
@@ -75,10 +106,11 @@ int main(int argc, char** argv){
             }
         } // after we read full instruction 
         instruction[j] = '\0';
-        chooseInstruction(instruction, buff + i + 1);
-        // if (!retval) {
-        //     printf("Wrong opperand\n");
-        // }
+        int retval = chooseInstruction(instruction, buff + i + 1);
+        if (retval) {
+            printf("Wrong opperand %d\n", string);
+            return -1;
+        }
     }
     writeInstruction(out);
     return 0;

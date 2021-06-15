@@ -14,8 +14,8 @@
 #ifndef SHELL_H
 #define SHELL_H
 
-static int positionRowShell = 0;
-static int positionColShell = 0;
+// static int positionRowShell = 0;
+// static int positionColShell = 0;
 
 int shellRun();
 
